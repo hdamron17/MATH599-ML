@@ -1,8 +1,8 @@
 all: build/Report.pdf
 
-build/Report.pdf: output/dataset2d-restored.png output/dataset3d-restored.png
+build/Report.pdf: output/dataset2d-restored.pgf output/dataset3d-restored.pgf
 
-output/dataset%d-restored.png: data/dataset%d.csv PCA.py output
+output/dataset%d-restored.pgf: data/dataset%d.csv PCA.py output
 	./PCA.py --save-prefix=output/ -spd $(shell seq -s, 1 $$(expr $* - 1) | sed 's/,$$//') $<
 
 data/dataset3d.csv: data

@@ -3,6 +3,7 @@
 \usepackage[bib,bibstyle=numeric,smalltitle,code]{shorthand}
 \usepackage{csvsimple}
 \usepackage{subfig}
+\usepackage{pgf}
 
 \addbibresource{Report.bib}
 
@@ -18,33 +19,49 @@
 
 \begin{document}
 	\maketitle
+	
+	% Possibly an abstract here
 
 	\section{Introduction}
+		\#TODO
 
 	\section{Procedure}
+		\#TODO
+	\subsection{Principal Component Analysis}
+		\#TODO
+	\subsection{3D Dataset Generation}
+		\#TODO
 
 	\section{Results}
+		\#TODO
 		\begin{table}[!htbp]
 			\centering
-			\caption{PCA on 2-dimensional dataset\vspace{-3ex}}
-			\begin{tabularx}{0.9\linewidth}{YYY}
-				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{data/dataset2d.csv}}
-				&
-				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-reduced-1.csv}}
-				&
-				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-restored-1.csv}}
-				\\\rule[1ex]{0pt}{0pt}
-				Original Dataset
-				&
-				Reduced to 1 Dimension
-				&
-				Restored from 1 Dimension
-			\end{tabularx}
+			\caption{PCA on 2-dimensional dataset\vspace{-3ex}}\vspace{2ex}
+			\subfloat[Original Dataset]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{data/dataset2d.csv}}}
+			\subfloat[Reduced to 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-reduced-1.csv}}}
+			\subfloat[Restored from 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-restored-1.csv}}}
 		\end{table}
 
+		\begin{figure}[!htbp]
+			\centering
+			\caption{Reduction and Restoration from 2D to 1D}
+			\subfloat[Reduced to 1D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset2d-reduced-1.pgf}}}
+			\subfloat[Restored compared to original]{\resizebox{0.48\linewidth}{!}{\input{output/dataset2d-restored.pgf}}}
+		\end{figure}
+
+		\begin{figure}[!htbp]
+			\centering
+			\caption{Reduction and Restoration from 3D to 1D and 2D}
+			\subfloat[Reduced to 1D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset3d-reduced-1.pgf}}}
+			\subfloat[Reduced to 2D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset3d-reduced-2.pgf}}} \\
+			\subfloat[Restored compared to original]{\resizebox{0.75\linewidth}{!}{\input{output/dataset3d-restored.pgf}}}
+		\end{figure}
+
 	\section{Discussion}
+		\#TODO
 
 	\section{External Use of PCA}
+		\#TODO
 
 	\nocite{*}
 	\printbibliography{}

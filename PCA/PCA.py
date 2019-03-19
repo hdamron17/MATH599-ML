@@ -34,8 +34,8 @@ def sklearn_reduceData(data, dim):
 def plot(data, save=None, show=True, *args, **kwargs):
     n, dim = data.shape
     if dim == 1:
+        plt.gca().axes.yaxis.set_ticklabels([])
         plt.scatter(data[:,0], np.zeros((n, dim)), *args, **kwargs)
-        pass
     elif dim == 2:
         plt.scatter(data[:,0], data[:,1], *args, **kwargs)
     elif dim == 3:
@@ -80,8 +80,20 @@ def main():
     savename = args.save_prefix + os.path.splitext(os.path.basename(args.filename))[0]
 
     if args.plot:
+        global mpl
+        import matplotlib as mpl
+        mpl.use('pgf')
+        mpl.rcParams.update({
+          "font.family": "serif",
+          "text.usetex": True,
+          "pgf.rcfonts": False,
+          "pgf.preamble": r'\usepackage{unicode-math}',
+          "figure.figsize": (4,3)
+        })
+
         global plt
         import matplotlib.pyplot as plt
+        plt.tight_layout()
 
     if not args.no_check:
         global sklearn_PCA
@@ -118,14 +130,14 @@ def main():
             savedata(restored_save, restored)
 
         if args.plot:
-            plot(reduced, save=(savename + "-reduced-%d.png" % dim) if args.save else None)
+            plot(reduced, save=(savename + "-reduced-%d.pgf" % dim) if args.save else None)
 
     if args.plot:
         plot(dataset, show=False, label="Original", color="c")
         for dim, restored in restored_all.items():
             plot(restored, show=False, label="Restored from dim %d" % dim, marker="+x."[dim-1], color="brm"[dim-1])
         plt.legend()
-        drawplot((savename + "-restored.png") if args.save else None)
+        drawplot((savename + "-restored.pgf") if args.save else None)
 
 if __name__ == "__main__":
     main()
