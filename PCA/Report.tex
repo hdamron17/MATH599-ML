@@ -1,0 +1,60 @@
+\documentclass{article}
+
+\usepackage[bib,bibstyle=numeric,smalltitle,code]{shorthand}
+\usepackage{csvsimple}
+\usepackage{subfig}
+
+\addbibresource{Report.bib}
+
+\setcounter{secnumdepth}{0}
+
+\title{Principal Component Analysis Report}
+\author{Hunter Damron}
+\date{21 March 2019}
+
+\csvset{
+	table head=\hline\csvlinetotablerow\\
+}
+
+\begin{document}
+	\maketitle
+
+	\section{Introduction}
+
+	\section{Procedure}
+
+	\section{Results}
+		\begin{table}[!htbp]
+			\centering
+			\caption{PCA on 2-dimensional dataset\vspace{-3ex}}
+			\begin{tabularx}{0.9\linewidth}{YYY}
+				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{data/dataset2d.csv}}
+				&
+				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-reduced-1.csv}}
+				&
+				\subfloat{\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-restored-1.csv}}
+				\\\rule[1ex]{0pt}{0pt}
+				Original Dataset
+				&
+				Reduced to 1 Dimension
+				&
+				Restored from 1 Dimension
+			\end{tabularx}
+		\end{table}
+
+	\section{Discussion}
+
+	\section{External Use of PCA}
+
+	\nocite{*}
+	\printbibliography{}
+
+	\appendix
+	\section{Appendix}
+	\setcounter{secnumdepth}{2}
+	\renewcommand{\thesubsection}{\Alph{subsection}}
+	\subsection{PCA Code}
+	\lstinputlisting{PCA.py}
+	\subsection{Dataset Generation}
+	\lstinputlisting{gendataset.py}
+\end{document}
