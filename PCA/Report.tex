@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage[bib,bibstyle=numeric,smalltitle,code]{shorthand}
+\usepackage[bib,bibstyle=numeric,bibargs={sorting=none},smalltitle,code,margin=0.95in]{shorthand}
 \usepackage{csvsimple}
 \usepackage{subfig}
 \usepackage{pgf}
@@ -13,30 +13,34 @@
 \author{Hunter Damron}
 \date{21 March 2019}
 
-\csvset{
-	table head=\hline\csvlinetotablerow\\
-}
-
 \begin{document}
 	\maketitle
-	
+
 	% Possibly an abstract here
 
 	\section{Introduction}
-		\#TODO
+		Recently, the amount of data and the scale of data analytics has increased drastically as businesses aim to use data processing to drive nearly every decision~\cite{bigdata}. For such big data analysis to be useful, the amount of data often must be reduced in a trade off between quality and efficiency. One such method, principal component analysis (PCA) was introduced by Karl Pearson in 1901~\cite{pearson}. By reducing the data dimensionality in an invertible way, analysis can be performed on a smaller representative dataset which is then transformed back into the original problem space.
+
+	\subsection{Problem Statement}
+		Given a matrix $X \in \R^{m \times n}$ containing $n$ $m$-dimensional data points, find a function $f : \R^{m \times n} \to \R{k \times n}$ where $k < n$ is the desired dimensionality and an approximation of its inverse $f\inv$ such that $f\inv (f(X)) \approx X$ with minimal error.
 
 	\section{Procedure}
-		\#TODO
-	\subsection{Principal Component Analysis}
-		\#TODO
+	\subsection{PCA Method}
+		In principal component analysis, the function $f$ is represented as a matrix $W \in \R^{k \times m}$ such that $Z = f(X) = XW$ and the inverse mapping is represented by $f\inv(X) = ZW\T$. Prior to this analysis, the data must be normalized by subtracting the mean vector from each data point. This normalization step permits the PCA step to treat zero as the centroid of the data, resulting in simpler computation. As shown in~\cite{notes}, the choice of $W$ which minimizes error in the restored dataset is the first $k$ columns of $V$ where $U, \Sigma, V\T = X$ is the singular value decomposition (SVD) of $X$. Because the diagonal of $\Sigma$ is ordered from largest magnitude down, this removal of the latter columns removes the least significant dimensions from the dataset. From a geometrical perspective, this process involves fitting an ellipsoid to the data then projecting each data point onto the most significant axes of the ellipsoid as illustrated in~\cite{pearson}.
+
+	\subsection{Numerical Procedure}
+		This implementation of the PCA algorithm uses Python and the NumPy module~\cite{numpy} for matrix manipulation and the scikit-learn module~\cite{sklearn} for a reference implementation of PCA. A common algorithm for calculating the SVD of a rectangular matrix is described in~\cite{svd}. This paper, however, relies on the submodule \hbox{\code{numpy.linalg}} for SVD calculation. Using NumPy's matrix multiplication routines, the dataset $X$ is multiplied with the resulting matrix $W$ to produce a reduced representation then multiplied with $W\T$ to produce an approximation of the original dataset. The reduced and the restored dataset representations are then plotted using Matplotlib~\cite{matplotlib}. Appendix~\ref{apx:code} provides the Python implementation of PCA described in this paper.
+
 	\subsection{3D Dataset Generation}
-		\#TODO
+		In order to produce a 3D dataset suitable for data reduction, one was needed with some degree of randomness but with an underlying pattern as would be present in real data. To generate such a dataset, NumPy was again used to produce a random vector then plot random points along that axis with 3D Gaussian noise on each data point. The code used to generate this dataset is provided in Appendix~\ref{apx:gen}.
 
 	\section{Results}
-		\#TODO
+		In order to demonstrate the correctness of this implementation of the PCA method, it was used to reduce a 2D dataset to 1D and to reduce a 3D dataset to both 1D and 2D. Table~\ref{tab:2d} shows the result of reducing a small 2D dataset to 1D and Figure~\ref{fig:2d} illustrates the reduced version as well as the comparison between the original dataset and the restored approximation after reducing to 1D. Similarly, Table~\ref{tab:3d} shows the reduction of a 3D dataset to both 1D and 2D then Figure~\ref{fig:3d} presents the data reduction graphically.
+
 		\begin{table}[!htbp]
 			\centering
 			\caption{PCA on 2-dimensional dataset\vspace{-3ex}}\vspace{2ex}
+			\label{tab:2d}
 			\subfloat[Original Dataset]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{data/dataset2d.csv}}}
 			\subfloat[Reduced to 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-reduced-1.csv}}}
 			\subfloat[Restored from 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset2d-restored-1.csv}}}
@@ -45,33 +49,48 @@
 		\begin{figure}[!htbp]
 			\centering
 			\caption{Reduction and Restoration from 2D to 1D}
+			\label{fig:2d}
 			\subfloat[Reduced to 1D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset2d-reduced-1.pgf}}}
 			\subfloat[Restored compared to original]{\resizebox{0.48\linewidth}{!}{\input{output/dataset2d-restored.pgf}}}
 		\end{figure}
 
+		\begin{table}[!htbp]
+			\centering
+			\caption{PCA on 3-dimensional dataset\vspace{-3ex}}\vspace{2ex}
+			\label{tab:3d}
+			\subfloat[Original Dataset]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{data/dataset3d.csv}}}
+			\subfloat[Reduced to 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset3d-reduced-1.csv}}}
+			\subfloat[Restored from 1 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset3d-restored-1.csv}}}
+			\\
+			\subfloat[Reduced to 2 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset3d-reduced-2.csv}}}
+			\subfloat[Restored from 2 Dimension]{\parbox{0.3\linewidth}{\centering\csvautotabular[table head=\hline\csvlinetotablerow\\]{output/dataset3d-restored-2.csv}}}
+		\end{table}
+
 		\begin{figure}[!htbp]
 			\centering
 			\caption{Reduction and Restoration from 3D to 1D and 2D}
+			\label{fig:3d}
 			\subfloat[Reduced to 1D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset3d-reduced-1.pgf}}}
-			\subfloat[Reduced to 2D]{\resizebox{0.48\linewidth}{!}{\input{output/dataset3d-reduced-2.pgf}}} \\
-			\subfloat[Restored compared to original]{\resizebox{0.75\linewidth}{!}{\input{output/dataset3d-restored.pgf}}}
+			\subfloat[Reduced to 2D \label{subfig:reduced32}]{\resizebox{0.48\linewidth}{!}{\input{output/dataset3d-reduced-2.pgf}}} \\
+			\subfloat[Restored compared to original \label{subfig:restored32}]{\resizebox{0.75\linewidth}{!}{\input{output/dataset3d-restored.pgf}}}
 		\end{figure}
 
 	\section{Discussion}
-		\#TODO
+		As shown in Figure~\ref{fig:2d}, reduction from 2D to 1D is essentially a projection of each data point onto the line of best fit. The orientation of that line is stored in the matrix $W$ so only the location of each point on that line must be kept in the data matrix $Z$. Unsurprisingly, the restoration of the dataset into 2D from 1D is a linear approximation of the dataset. Reduction from 3D to 1D follows the same pattern as shown in Figure~\ref{fig:3d}.
+
+		The relationship between the original 3D dataset and its reduction to 2D is less obvious, however. The restored form in Figure~\ref{subfig:restored32} appears near linear with only slight deviation from the 1D approximation. The same observation can be made of Figure~\ref{subfig:reduced32} because the horizontal axis spans almost 10 units while the vertical axis spans only about 1 unit. Because the original dataset followed a near linear pattern, there is one clearly primary axis, but the secondary axis depends only on the random noise of the generated dataset. If a dataset had been chosen with a more distinct plane pattern, the reduction to 2D would fit the data much better than the reduction to 1D.
 
 	\section{External Use of PCA}
-		\#TODO
+		In the scope of robotics, Manjanna et.\ al.\ of McGill University use PCA to extract the 5 most prominent components of a sensor input vector of size $13 \times 30$ from the robot motor. This reduced dataset is then classified using a $k$-Nearest Neighbors algorithm which would be much more complex in the original very large configuration space. By preprocessing with PCA, the unsupervised learning discussed in the paper only considers key features for classification, attempting to ignore noise from the sensors. The result is a robotic platform which can determine the nature of its current environment and adjust its gait accordingly.
 
-	\nocite{*}
 	\printbibliography{}
 
 	\appendix
 	\section{Appendix}
 	\setcounter{secnumdepth}{2}
 	\renewcommand{\thesubsection}{\Alph{subsection}}
-	\subsection{PCA Code}
+	\subsection{PCA Code} \label{apx:code}
 	\lstinputlisting{PCA.py}
-	\subsection{Dataset Generation}
+	\subsection{Dataset Generation} \label{apx:gen}
 	\lstinputlisting{gendataset.py}
 \end{document}

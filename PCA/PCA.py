@@ -16,20 +16,19 @@ def normData(data):
 def reduceData(data, dim):
     normed, mean = normData(data)
     m, n = normed.shape
-    U, s, V = np.linalg.svd(normed)
-    W = V[:dim]
-    reduced = (W @ normed.T).T
+    U, s, VT = np.linalg.svd(normed)
+    W = VT[:dim].T
+    reduced = (normed @ W)
     return reduced, W, mean
 
 def restoreData(reduced, W, mean):
-    # return np.dot(W, reduced) + mean
-    return (W.T @ reduced.T).T + mean
+    return (reduced @ W.T) + mean
 
 def sklearn_reduceData(data, dim):
     # Requires sklearn_PCA to be imported
     model = sklearn_PCA(dim, svd_solver="full")
     reduced = model.fit_transform(data)
-    return reduced, model.components_, model.mean_
+    return reduced, model.components_.T, model.mean_
 
 def plot(data, save=None, show=True, *args, **kwargs):
     n, dim = data.shape
