@@ -22,7 +22,7 @@
 		Recently, the amount of data and the scale of data analytics has increased drastically as businesses aim to use data processing to drive nearly every decision~\cite{bigdata}. For such big data analysis to be useful, the amount of data often must be reduced in a trade off between quality and efficiency. One such method, principal component analysis (PCA) was introduced by Karl Pearson in 1901~\cite{pearson}. By reducing the data dimensionality in an invertible way, analysis can be performed on a smaller representative dataset which is then transformed back into the original problem space.
 
 	\subsection{Problem Statement}
-		Given a matrix $X \in \R^{m \times n}$ containing $n$ $m$-dimensional data points, find a function $f : \R^{m \times n} \to \R{k \times n}$ where $k < n$ is the desired dimensionality and an approximation of its inverse $f\inv$ such that $f\inv (f(X)) \approx X$ with minimal error.
+		Given a matrix $X \in \R^{m \times n}$ containing $n$ $m$-dimensional data points, find a function $f : \R^{m \times n} \to \R^{k \times n}$ where $k < n$ is the desired dimensionality and an approximation of its inverse $f\inv$ such that $f\inv (f(X)) \approx X$ with minimal error.
 
 	\section{Procedure}
 	\subsection{PCA Method}
