@@ -11,23 +11,28 @@ from math import pi
 
 N = 10000
 k = 10
-learn_rate = 0.9
-epochs = 100000
-plot_rate = 200
+learn_rate = 0.001
+epochs = 20000
+plot_rate = 500
+
+id = lambda n: n
 
 class Layer:
     def __init__(self, activation=tf.nn.relu, dim=(1,1)):
         self.W = tf.Variable(tf.random_normal(dim))
-        self.b = tf.Variable(tf.random_normal([dim[0],1]))
+        self.b = tf.Variable(tf.zeros([dim[0],1]))
         self.activation = activation
 
     def __call__(self, x):
-        return self.activation(tf.add(tf.matmul(self.W, x), self.b))
+        ret = tf.add(tf.matmul(self.W, x), self.b)
+        if self.activation is not None:
+            ret = self.activation(ret)
+        return ret
 
 class Model:
-    def __init__(self, hiddens=[5,5]):
+    def __init__(self, hiddens=[100]):
         dims = [1] + hiddens
-        self.layers = [Layer(dim=(o,i)) for i, o in zip(dims, dims[1:])] + [Layer(dim=(1,dims[-1]), activation=tf.nn.sigmoid)]
+        self.layers = [Layer(dim=(o,i)) for i, o in zip(dims, dims[1:])] + [Layer(dim=(1,dims[-1]), activation=None)]
 
     def __call__(self, x):
         return tf.squeeze(reduce(lambda v, op: op(v), self.layers, tf.expand_dims(x, 0)), 0)
