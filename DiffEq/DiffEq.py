@@ -11,10 +11,10 @@ from datetime import datetime
 
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
-N = 10000
+N = 500
 k = 10
-learn_rate = 0.001
-hiddens = 100
+learn_rate = 0.00005
+hiddens = [120,120]
 epochs = 20000
 plot_rate = 500
 
@@ -55,7 +55,7 @@ def plot(t, y, model, restrict=500):
     plt.legend()
 
 def main():
-    model = Model([hiddens])
+    model = Model(hiddens)
     loss = lambda pred, goal: tf.reduce_mean(tf.square(goal - pred))
     t = tf.linspace(0.0, 2 * pi / k, N)
     y = tf.sin(k * t)
@@ -106,7 +106,7 @@ def main():
                 f.write("N = %d\n" % N)
                 f.write("k = %d\n" % k)
                 f.write("learn_rate = %f\n" % learn_rate)
-                f.write("hiddens = %d\n" % hiddens)
+                f.write("hiddens = %s\n" % hiddens)
                 f.write("Notes: %s" % notes)
             np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(), y.eval())).T, delimiter=',')
