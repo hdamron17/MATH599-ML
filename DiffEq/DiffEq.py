@@ -18,8 +18,6 @@ hiddens = 100
 epochs = 20000
 plot_rate = 500
 
-notes = ""
-
 id = lambda n: n
 
 class Layer:
@@ -98,6 +96,10 @@ def main():
         except:
             save = False
         if save:
+            try:
+                notes = input("Notes: ")
+            except:
+                notes = ""
             now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             os.mkdir(now)
             with open(os.path.join(now, "Parameters.txt"), 'w+') as f:
@@ -105,7 +107,7 @@ def main():
                 f.write("k = %d\n" % k)
                 f.write("learn_rate = %f\n" % learn_rate)
                 f.write("hiddens = %d\n" % hiddens)
-                f.write("Notes:\n%s\n" % notes)
+                f.write("Notes: %s" % notes)
             np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(), y.eval())).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((bigt.eval(), bigy.eval())).T, delimiter=',')
