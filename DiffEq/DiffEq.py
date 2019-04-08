@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from functools import reduce
 from random import shuffle
 from math import pi
+import os, os.path
+from datetime import datetime
 
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
@@ -54,19 +56,28 @@ def plot(t, y, model, restrict=500):
 def main():
     model = Model()
     loss = lambda pred, goal: tf.reduce_mean(tf.square(goal - pred))
-    t = tf.linspace(0.0, pi / 5, N)
+    t = tf.linspace(0.0, 2 * pi / k, N)
     y = tf.sin(k * t)
+
+    bigt = tf.linspace(0.0, k * pi, 1000)
+    bigy = tf.sin(k * bigt)
+    bigloss_op = loss(model(bigt), bigy)
 
     loss_op = loss(model(t), y)
     opt = tf.train.GradientDescentOptimizer(learn_rate).minimize(loss_op)
+
+    losses = []
+    big_losses = []
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         print('Initial:   loss=%.5f' % loss_op.eval())
         for epoch in range(epochs):
             try:
-                sess.run(opt)
-                print('Epoch %3d: loss=%.5f' % (epoch+1, loss_op.eval()))
+                _, cur_loss = sess.run((opt, loss_op))
+                print('Epoch %3d: loss=%.5f' % (epoch+1, cur_loss))
+                losses.append(cur_loss)
+                big_losses.append(bigloss_op.eval())
 
                 if (epoch+1) % plot_rate == 0:
                     plot(t, y, model)
@@ -76,11 +87,24 @@ def main():
                 break
 
         # TODO plot full projection 0..10pi
-        bigt = tf.linspace(0.0, 10 * pi, 1000)
-        plot(bigt, tf.sin(k * bigt), model, restrict=None)
+        plot(bigt, bigy, model, restrict=None)
         plt.draw()
         plt.pause(1)
-        # plt.show()
+
+        try:
+            save = input("Save? [y/N] ").lower().startswith("y")
+        except:
+            save = False
+        if save:
+            now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+            os.mkdir(now)
+            np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
+            np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(), y.eval())).T, delimiter=',')
+            np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((bigt.eval(), bigy.eval())).T, delimiter=',')
+            plot(t, y, model)
+            plt.savefig(os.path.join(now, "Plot.png"))
+            plot(bigt, bigy, model, restrict=None)
+            plt.savefig(os.path.join(now, "Plot-full.png"))
 
 if __name__ == "__main__":
     main()
