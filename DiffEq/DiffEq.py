@@ -14,6 +14,7 @@ from datetime import datetime
 N = 10000
 k = 10
 learn_rate = 0.001
+hiddens = 100
 epochs = 20000
 plot_rate = 500
 
@@ -88,7 +89,6 @@ def main():
             except KeyboardInterrupt:
                 break
 
-        # TODO plot full projection 0..10pi
         plot(bigt, bigy, model, restrict=None)
         plt.draw()
         plt.pause(1)
