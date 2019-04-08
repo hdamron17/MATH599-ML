@@ -17,6 +17,8 @@ learn_rate = 0.001
 epochs = 20000
 plot_rate = 500
 
+notes = ""
+
 id = lambda n: n
 
 class Layer:
@@ -54,7 +56,7 @@ def plot(t, y, model, restrict=500):
     plt.legend()
 
 def main():
-    model = Model()
+    model = Model([hiddens])
     loss = lambda pred, goal: tf.reduce_mean(tf.square(goal - pred))
     t = tf.linspace(0.0, 2 * pi / k, N)
     y = tf.sin(k * t)
@@ -98,6 +100,12 @@ def main():
         if save:
             now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
             os.mkdir(now)
+            with open(os.path.join(now, "Parameters.txt"), 'w+') as f:
+                f.write("N = %d\n" % N)
+                f.write("k = %d\n" % k)
+                f.write("learn_rate = %f\n" % learn_rate)
+                f.write("hiddens = %d\n" % hiddens)
+                f.write("Notes:\n%s\n" % notes)
             np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(), y.eval())).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((bigt.eval(), bigy.eval())).T, delimiter=',')
@@ -105,6 +113,8 @@ def main():
             plt.savefig(os.path.join(now, "Plot.png"))
             plot(bigt, bigy, model, restrict=None)
             plt.savefig(os.path.join(now, "Plot-full.png"))
+            with open(os.path.join(now, "DiffEq.py"), 'w+') as f, open(__file__, 'r') as src:
+                f.write(src.read())
 
 if __name__ == "__main__":
     main()
