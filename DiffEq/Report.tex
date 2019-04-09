@@ -1,0 +1,44 @@
+\documentclass{article}
+
+\usepackage[bib,bibstyle=numeric,bibargs={sorting=none},smalltitle,code,margin=0.95in]{shorthand}
+\usepackage{pgfplots,pgfplotstable}
+
+\addbibresource{Report.bib}
+
+\def\datadir{2019-04-08-01-26-52}
+
+\setcounter{secnumdepth}{0}
+
+\title{Solving Differential Equations using a Forward Neural Network}
+\author{Hunter Damron}
+\date{9 April 2019}
+
+\begin{document}
+    \maketitle
+
+    \section{Introduction}
+    \subsection{Problem Statement}
+    \section{Procedure}
+    \section{Results}
+    \section{Discussion}
+
+%    \printbibliography{}
+
+    \begin{figure}[!htbp]
+        \centering
+        % \includegraphics{\datadir/Plot.png}
+        \begin{tikzpicture}
+        \begin{axis}
+            \pgfplotstableread[col sep=comma]{\datadir/Values.csv}\datavalues
+            \addplot table[y index=0, y index=1]{\datavalues};  % Experimental
+        \end{axis}
+        \end{tikzpicture}
+    \end{figure}
+
+    \appendix
+    \section{Appendix}
+    \setcounter{secnumdepth}{2}
+    \renewcommand{\thesubsection}{\Alph{subsection}}
+    \subsection{Sine Curve Neural Network} \label{apx:code1}
+    \lstinputlisting{DiffEq.py}
+\end{document}
