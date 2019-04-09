@@ -12,8 +12,9 @@ from datetime import datetime
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
 N = 500
+batch_N = 50
 k = 10
-learn_rate = 0.00005
+learn_rate = 0.000005
 hiddens = [120,120]
 epochs = 20000
 plot_rate = 500
@@ -40,54 +41,57 @@ class Model:
     def __call__(self, x):
         return tf.squeeze(reduce(lambda v, op: op(v), self.layers, tf.expand_dims(x, 0)), 0)
 
-def plot(t, y, model, restrict=500):
-    if restrict is not None:
-        n = tf.size(t).eval()
-        i = np.concatenate(([0], np.msort(np.random.choice(n, min(restrict,n), replace=False)), [n-1]))
-        tsmall = tf.gather(t, i).eval()
-        ysmall = tf.gather(y, i).eval()
-    else:
-        tsmall = t.eval()
-        ysmall = y.eval()
+def plot(t, y, model, begin, end, n=N):
+    tval = {t: np.linspace(begin, end, n)}
+    tplot = t.eval(tval)
+    yplot = y.eval(tval)
+    predplot = model(t).eval(tval)
     plt.clf()
-    plt.plot(tsmall, ysmall, '--', label="Real")
-    plt.plot(tsmall, model(tsmall).eval(), '-', label="Prediction")
+    plt.plot(tplot, yplot, '--', label="Real")
+    plt.plot(tplot, predplot, '-', label="Prediction")
     plt.legend()
 
 def main():
     model = Model(hiddens)
     loss = lambda pred, goal: tf.reduce_mean(tf.square(goal - pred))
-    t = tf.linspace(0.0, 2 * pi / k, N)
+    t = tf.placeholder(tf.float32, [None])
     y = tf.sin(k * t)
 
-    bigt = tf.linspace(0.0, k * pi, 1000)
-    bigy = tf.sin(k * bigt)
-    bigloss_op = loss(model(bigt), bigy)
+    trainrange = (0, 2 * pi / k)
+    bigrange = (0, k * pi)
 
     loss_op = loss(model(t), y)
     opt = tf.train.GradientDescentOptimizer(learn_rate).minimize(loss_op)
 
+    tval = {t: np.linspace(*trainrange, N)}
+    bigtval = {t: np.linspace(*bigrange, N)}
+
     losses = []
+    batch_losses = []
     big_losses = []
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        print('Initial:   loss=%.5f' % loss_op.eval())
+        print('Initial:   loss=%.5f' % loss_op.eval(tval))
         for epoch in range(epochs):
             try:
-                _, cur_loss = sess.run((opt, loss_op))
+                for batch in range(int(N / batch_N)):
+                    tbatch = {t: (trainrange[1] - trainrange[0]) * np.random.random(batch_N) + trainrange[0]}
+                    _, batch_loss = sess.run((opt, loss_op), tbatch)
+                cur_loss = loss_op.eval(tval)
                 print('Epoch %3d: loss=%.5f' % (epoch+1, cur_loss))
                 losses.append(cur_loss)
-                big_losses.append(bigloss_op.eval())
+                batch_losses.append(batch_loss)
+                big_losses.append(loss_op.eval(bigtval))
 
                 if (epoch+1) % plot_rate == 0:
-                    plot(t, y, model)
+                    plot(t, y, model, *trainrange, N)
                     plt.draw()
                     plt.pause(0.1)
             except KeyboardInterrupt:
                 break
 
-        plot(bigt, bigy, model, restrict=None)
+        plot(t, y, model, *bigrange, N)
         plt.draw()
         plt.pause(1)
 
@@ -107,13 +111,13 @@ def main():
                 f.write("k = %d\n" % k)
                 f.write("learn_rate = %f\n" % learn_rate)
                 f.write("hiddens = %s\n" % hiddens)
-                f.write("Notes: %s" % notes)
+                f.write("Notes: %s\n" % notes)
             np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
-            np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(), y.eval(), model(t).eval())).T, delimiter=',')
-            np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((bigt.eval(), bigy.eval(), model(bigt).eval())).T, delimiter=',')
-            plot(t, y, model)
+            np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(tval), y.eval(tval), model(t).eval(tval))).T, delimiter=',')
+            np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((t.eval(bigtval), y.eval(bigtval), model(t).eval(bigtval))).T, delimiter=',')
+            plot(t, y, model, *trainrange, N)
             plt.savefig(os.path.join(now, "Plot.png"))
-            plot(bigt, bigy, model, restrict=None)
+            plot(t, y, model, *bigrange, N)
             plt.savefig(os.path.join(now, "Plot-full.png"))
             with open(os.path.join(now, "DiffEq.py"), 'w+') as f, open(__file__, 'r') as src:
                 f.write(src.read())
