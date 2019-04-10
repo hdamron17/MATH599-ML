@@ -3,6 +3,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import Function, symbols, diff, dsolve, solve, lambdify
 from functools import reduce
 from random import shuffle
 from math import pi
@@ -12,17 +13,20 @@ from datetime import datetime
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
 N = 500
-batch_N = 50
+batch_N = 100
 k = 10
-learn_rate = 0.000005
-hiddens = [120,120]
+learn_rate = 0.000001
+hiddens = [20,20,20]
 epochs = 20000
-plot_rate = 500
+plot_rate = 20
+
+inity = 0
+inityp = 0.5
 
 id = lambda n: n
 
 class Layer:
-    def __init__(self, activation=tf.nn.relu, dim=(1,1)):
+    def __init__(self, activation, dim=(1,1)):
         self.W = tf.Variable(tf.random_normal(dim))
         self.b = tf.Variable(tf.zeros([dim[0],1]))
         self.activation = activation
@@ -34,9 +38,9 @@ class Layer:
         return ret
 
 class Model:
-    def __init__(self, hiddens=[100]):
+    def __init__(self, hiddens=[100], activation=tf.nn.relu):
         dims = [1] + hiddens
-        self.layers = [Layer(dim=(o,i)) for i, o in zip(dims, dims[1:])] + [Layer(dim=(1,dims[-1]), activation=None)]
+        self.layers = [Layer(dim=(o,i), activation=activation) for i, o in zip(dims, dims[1:])] + [Layer(dim=(1,dims[-1]), activation=None)]
 
     def __call__(self, x):
         return tf.squeeze(reduce(lambda v, op: op(v), self.layers, tf.expand_dims(x, 0)), 0)
@@ -51,16 +55,41 @@ def plot(t, y, model, begin, end, n=N):
     plt.plot(tplot, predplot, '-', label="Prediction")
     plt.legend()
 
-def main():
-    model = Model(hiddens)
-    loss = lambda pred, goal: tf.reduce_mean(tf.square(goal - pred))
+# Analytical solution for Part 2
+def solution(k, y0, yp0):
+    y = Function("y")
+    t = symbols("t")
+
+    gen_sol = dsolve(diff(y(t), t, 2) + k**2 * y(t), y(t)).rhs
+    consts = solve([gen_sol.subs(t, 0) - y0, diff(gen_sol, t).subs(t, 0) - yp0])
+    sol = gen_sol.subs(consts)
+    return lambdify(t, sol, "numpy")
+
+def main(part=1):
+    print("Solving Part %d" % part)
+
     t = tf.placeholder(tf.float32, [None])
-    y = tf.sin(k * t)
 
-    trainrange = (0, 2 * pi / k)
-    bigrange = (0, k * pi)
+    if part == 1:
+        model = Model(hiddens)
 
-    loss_op = loss(model(t), y)
+        y = tf.sin(k * t)
+        loss_op = tf.reduce_mean(tf.square(model(t) - y))
+
+        trainrange = (0, 2 * pi / k)
+        bigrange = (0, k * pi)
+    else:
+        model = Model(hiddens, tf.nn.tanh)  # Tanh is better because it is differentiable
+
+        y = tf.py_func(solution(k, inity, inityp), [t], tf.float32)
+        m = model(t)
+        r0 = tf.reduce_mean(tf.square(tf.diag_part(tf.hessians(m, t)[0]) + k**2 * model(t)))
+        r1 = tf.square(tf.gradients(m, t)[0][0] - inityp)  # Assumes the first value is always 0
+        r2 = tf.square(m[0] - inity)
+        loss_op = 3*r0 + r1 + r2
+
+        trainrange = bigrange = (0, k)
+
     opt = tf.train.GradientDescentOptimizer(learn_rate).minimize(loss_op)
 
     tval = {t: np.linspace(*trainrange, N)}
@@ -76,7 +105,7 @@ def main():
         for epoch in range(epochs):
             try:
                 for batch in range(int(N / batch_N)):
-                    tbatch = {t: (trainrange[1] - trainrange[0]) * np.random.random(batch_N) + trainrange[0]}
+                    tbatch = {t: np.concatenate(([0], (trainrange[1] - trainrange[0]) * np.random.random(batch_N) + trainrange[0]))}
                     _, batch_loss = sess.run((opt, loss_op), tbatch)
                 cur_loss = loss_op.eval(tval)
                 print('Epoch %3d: loss=%.5f' % (epoch+1, cur_loss))
@@ -93,7 +122,7 @@ def main():
 
         plot(t, y, model, *bigrange, N)
         plt.draw()
-        plt.pause(1)
+        plt.pause(0.1)
 
         try:
             save = input("Save? [y/N] ").lower().startswith("y")
@@ -114,13 +143,18 @@ def main():
                 f.write("Notes: %s\n" % notes)
             np.savetxt(os.path.join(now, "Losses.csv"), np.vstack((losses, big_losses)).T, delimiter=',')
             np.savetxt(os.path.join(now, "Values.csv"), np.vstack((t.eval(tval), y.eval(tval), model(t).eval(tval))).T, delimiter=',')
-            np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((t.eval(bigtval), y.eval(bigtval), model(t).eval(bigtval))).T, delimiter=',')
             plot(t, y, model, *trainrange, N)
             plt.savefig(os.path.join(now, "Plot.png"))
-            plot(t, y, model, *bigrange, N)
-            plt.savefig(os.path.join(now, "Plot-full.png"))
+            if part == 1:
+                np.savetxt(os.path.join(now, "Values-full.csv"), np.vstack((t.eval(bigtval), y.eval(bigtval), model(t).eval(bigtval))).T, delimiter=',')
+                plot(t, y, model, *bigrange, N)
+                plt.savefig(os.path.join(now, "Plot-full.png"))
             with open(os.path.join(now, "DiffEq.py"), 'w+') as f, open(__file__, 'r') as src:
                 f.write(src.read())
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == '-p2':
+        main(part=2)
+    else:
+        main()
