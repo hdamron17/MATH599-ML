@@ -3,12 +3,14 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import Function, symbols, diff, dsolve, solve, lambdify
+from sympy import Function, symbols, diff, dsolve, solve, lambdify, init_printing, pprint
 from functools import reduce
 from random import shuffle
 from math import pi
 import os, os.path
 from datetime import datetime
+
+init_printing()  # Sympy
 
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
@@ -59,6 +61,7 @@ def solution(k, y0, yp0):
     gen_sol = dsolve(diff(y(t), t, 2) + k**2 * y(t), y(t)).rhs
     consts = solve([gen_sol.subs(t, 0) - y0, diff(gen_sol, t).subs(t, 0) - yp0])
     sol = gen_sol.subs(consts)
+    pprint(sol)
     return lambdify(t, sol, "numpy")
 
 def main(part=1):
@@ -82,7 +85,7 @@ def main(part=1):
         r0 = tf.reduce_mean(tf.square(tf.diag_part(tf.hessians(m, t)[0]) + k**2 * model(t)))
         r1 = tf.square(tf.gradients(m, t)[0][0] - inityp)  # Assumes the first value is always 0
         r2 = tf.square(m[0] - inity)
-        loss_op = 3*r0 + r1 + r2
+        loss_op = 0.5*r0 + r1 + r2
 
         trainrange = bigrange = (0, k)
 
