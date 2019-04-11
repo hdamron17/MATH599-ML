@@ -15,9 +15,9 @@ from datetime import datetime
 N = 500
 batch_N = 100
 k = 10
-learn_rate = 0.000001
-hiddens = [20,20,20]
-epochs = 20000
+learn_rate = 0.001
+hiddens = [100,100]
+epochs = 80000
 plot_rate = 20
 
 inity = 0
@@ -90,7 +90,10 @@ def main(part=1):
 
         trainrange = bigrange = (0, k)
 
-    opt = tf.train.GradientDescentOptimizer(learn_rate).minimize(loss_op)
+    global_step = tf.Variable(0, trainable=False)
+    var_learn_rate = tf.train.exponential_decay(learn_rate, global_step, 1000, 0.95)
+
+    opt = tf.train.AdamOptimizer(var_learn_rate).minimize(loss_op, global_step=global_step)
 
     tval = {t: np.linspace(*trainrange, N)}
     bigtval = {t: np.linspace(*bigrange, N)}
@@ -108,7 +111,7 @@ def main(part=1):
                     tbatch = {t: np.concatenate(([0], (trainrange[1] - trainrange[0]) * np.random.random(batch_N) + trainrange[0]))}
                     _, batch_loss = sess.run((opt, loss_op), tbatch)
                 cur_loss = loss_op.eval(tval)
-                print('Epoch %3d: loss=%.5f' % (epoch+1, cur_loss))
+                print('Epoch %3d: loss=%.5f,\tlearn_rate=%f' % (epoch+1, cur_loss, var_learn_rate.eval()))
                 losses.append(cur_loss)
                 batch_losses.append(batch_loss)
                 big_losses.append(loss_op.eval(bigtval))
