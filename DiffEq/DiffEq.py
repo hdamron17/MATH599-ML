@@ -15,10 +15,6 @@ from datetime import datetime
 N = 500
 batch_N = 100
 k = 10
-learn_rate = 0.001
-hiddens = [100,100]
-epochs = 80000
-plot_rate = 20
 
 inity = 0
 inityp = 0.5
@@ -158,6 +154,18 @@ def main(part=1):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == '-p2':
+        batch_N = 100
+
+        learn_rate = 0.001
+        hiddens = [100,100]
+        epochs = 80000
+        plot_rate = 20
         main(part=2)
     else:
+        batch_N = 100
+
+        learn_rate = 0.0005
+        hiddens = [120,120]
+        epochs = 20000
+        plot_rate = 500
         main()
