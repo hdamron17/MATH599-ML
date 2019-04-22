@@ -15,7 +15,6 @@ init_printing()  # Sympy
 # Inspiration from https://www.tensorflow.org/tutorials/eager/custom_training
 
 N = 500
-batch_N = 100
 k = 10
 
 inity = 0
@@ -78,19 +77,19 @@ def main(part=1):
         trainrange = (0, 2 * pi / k)
         bigrange = (0, k * pi)
     else:
-        model = Model(hiddens, tf.nn.tanh)  # Tanh is better because it is differentiable
+        model = Model(hiddens, tf.sin)  # Must be differentiable
 
         y = tf.py_func(solution(k, inity, inityp), [t], tf.float32)
         m = model(t)
         r0 = tf.reduce_mean(tf.square(tf.diag_part(tf.hessians(m, t)[0]) + k**2 * model(t)))
         r1 = tf.square(tf.gradients(m, t)[0][0] - inityp)  # Assumes the first value is always 0
         r2 = tf.square(m[0] - inity)
-        loss_op = 0.5*r0 + r1 + r2
+        loss_op = r0 + 10*r1 + r2
 
         trainrange = bigrange = (0, k)
 
     global_step = tf.Variable(0, trainable=False)
-    var_learn_rate = tf.train.exponential_decay(learn_rate, global_step, 1000, 0.95)
+    var_learn_rate = tf.train.exponential_decay(learn_rate, global_step, decay_step, decay_rate)
 
     opt = tf.train.AdamOptimizer(var_learn_rate).minimize(loss_op, global_step=global_step)
 
@@ -157,12 +156,16 @@ def main(part=1):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == '-p2':
-        batch_N = 100
+        batch_N = 10
 
-        learn_rate = 0.001
-        hiddens = [100,100]
+        learn_rate = 0.07
+        hiddens = [10,10,10]
         epochs = 80000
         plot_rate = 20
+
+        decay_step = 1000
+        decay_rate = 0.99
+
         main(part=2)
     else:
         batch_N = 100
@@ -171,4 +174,8 @@ if __name__ == "__main__":
         hiddens = [120,120]
         epochs = 20000
         plot_rate = 500
+
+        decay_step = 1000
+        decay_rate = 0.95
+
         main()
