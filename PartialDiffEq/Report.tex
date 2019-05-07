@@ -1,0 +1,50 @@
+\documentclass{article}
+
+\usepackage[bib,bibstyle=ieee,bibargs={sorting=none},smalltitle,code,margin=0.95in]{shorthand}
+\usepackage{pgfplots}
+
+\addbibresource{Report.bib}
+
+\setcounter{secnumdepth}{0}
+
+\title{Solving Partial Differential Equations using a Deep Neural Network}
+\author{Hunter Damron}
+\date{\today}
+
+\def\model{models/may6}
+
+\begin{document}
+  \maketitle
+
+  \section{Introduction}
+  \section{Problem Statement}
+  \section{Procedure}
+  \section{Results}
+
+  \begin{figure}[!htbp]
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+      xlabel={Epoch},
+      ylabel={Cost (logarithmically scaled)},
+      ymode=log,
+      width=0.8\textwidth
+    ]
+      \addplot[thick,mark=none,smooth] table[x expr={3*\coordindex}, y index=0,col sep=comma]{\model-losses-full-small.csv};
+      \addplot[thick,mark=none,smooth,dotted] table[x expr={3*\coordindex}, y index=4,col sep=comma]{\model-losses-full-small.csv};
+      \legend{Cost $J$, $MSE$ Error from Analytical Solution};
+    \end{axis}
+    \end{tikzpicture}
+  \end{figure}
+
+  \section{Discussion}
+
+  \printbibliography{}
+
+  \appendix
+  \section{Appendix}
+  \setcounter{secnumdepth}{2}
+  \renewcommand{\thesubsection}{\Alph{subsection}}
+  \subsection{Network Implementation} \label{apx:code}
+  \lstinputlisting{PartialDiffEq.py}
+\end{document}
