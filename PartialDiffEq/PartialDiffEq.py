@@ -13,11 +13,8 @@ from sys import argv
 import os, os.path, shutil, glob
 
 learn_rate = 0.01
-# learn_rate = 0.0001
 decay_rate = 0.999
 hiddens = [80,80,80]
-# hiddens = [50,50,50]
-# hiddens = [120,120]
 
 activation=tf.nn.tanh
 
@@ -152,11 +149,6 @@ def main():
     z_plot = np.reshape(z_plot_mat, [xs,ts])
     u_plot = np.reshape(u_plot_mat, [xs,ts])
 
-    # plt.subplot(121)
-    # plt.pcolormesh(*xt_plot, z_plot,
-    #   vmax=max(np.max(u_plot), np.max(z_plot)),
-    #   vmin=min(np.min(u_plot), np.min(z_plot)))
-    # plt.colorbar()
     ax = plt.subplot(121, projection="3d")
     ax.plot_surface(*xt_plot, z_plot, cmap=cm.viridis)
     ax.set_zlim(
@@ -167,9 +159,6 @@ def main():
     plt.ylabel("t")
     ax.set_zlabel("z")
 
-    # plt.subplot(122)
-    # plt.pcolormesh(*xt_plot, u_plot)
-    # plt.colorbar()
     ax = plt.subplot(122, projection="3d")
     ax.plot_surface(*xt_plot, u_plot, cmap=cm.viridis)
     plt.title("Analytical")
